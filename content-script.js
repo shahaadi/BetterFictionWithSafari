@@ -16,9 +16,9 @@ async function main() {
 
         // Allow copy text
         if (settings.allowCopy) {
-            document.querySelectorAll('p').forEach((element) => {
+            for (const element of document.querySelectorAll('p')) {
                 element.style.userSelect = 'text';
-            });
+            }
         }
 
         // Create Bookmarks list button
@@ -64,10 +64,10 @@ async function main() {
             topMenu.appendChild(rootElement);
         }
 
-        // Block advertisements
-        document.querySelectorAll('[title="Advertisement"]').forEach((element) => {
+        // Remove ads
+        for (const element of document.querySelectorAll('[title="Advertisement"]')) {
             element.remove();
-        });
+        }
 
         const advertisementBar = document.querySelector('[style="text-align:center;padding-top:5px;background-color: #f6f7ee;"]');
         if (advertisementBar) {

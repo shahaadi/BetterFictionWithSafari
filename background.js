@@ -38,18 +38,18 @@ chrome.runtime.onInstalled.addListener(() => {
         markFicWithBookmark: false,
     };
 
-    // Set default values for secondary functions
-    secondaryFunctions.forEach((setting) => {
+    // Initialize secondary functions
+    for (const setting of secondaryFunctions) {
         defaultSettings[setting] = true;
-    });
+    }
 
     chrome.storage.sync.get('settings')
         .then((result) => {
             const settings = result.settings;
             if (settings) {
-                [...mainFunctions, ...secondaryFunctions].forEach((setting) => {
+                for (const setting of [...mainFunctions, ...secondaryFunctions]) {
                     defaultSettings[setting] = settings[setting];
-                });
+                }
             }
             return chrome.storage.sync.set({ settings: defaultSettings });
         })
@@ -138,7 +138,7 @@ chrome.runtime.onMessage.addListener((action, sender, sendResponse) => {
     } else if (action.message === 'get-links') {
         chrome.storage.local.get()
             .then((result) => {
-                const bookmarkData = [];
+                const bookmarkLinks = [];
                 for (const key in result) {
                     const bookmark = result[key];
                     if (bookmark.storyName) {
@@ -146,10 +146,10 @@ chrome.runtime.onMessage.addListener((action, sender, sendResponse) => {
                             .replaceAll(/[,&:;)]/g, '')
                             .replaceAll(/['(]/g, ' ')
                             .replaceAll(' ', '-')}`;
-                        bookmarkData.push(link);
+                        bookmarkLinks.push(link);
                     }
                 }
-                sendResponse({ result: bookmarkData });
+                sendResponse({ result: bookmarkLinks });
             })
             .catch((error) => {
                 console.error('Failed to retrieve bookmark links from local storage:', error);

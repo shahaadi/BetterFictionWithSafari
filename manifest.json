@@ -82,6 +82,10 @@
             "matches": ["https://www.fanfiction.net/*"]
         },
         {
+            "resources": ["utils/*"],
+            "matches": ["https://www.fanfiction.net/*"]
+        },
+        {
             "resources": ["tabs/*"],
             "matches": ["https://www.fanfiction.net/*"]
         }

@@ -1,5 +1,5 @@
 const tableBody = document.querySelector('tbody');
-const bookmarkData = [];
+const bookmarkLinks = [];
 
 chrome.storage.local.get()
     .then((result) => {
@@ -26,11 +26,11 @@ chrome.storage.local.get()
                     formattedDate = `${month}.${day}.${year}`;
                 }
                 bookmark.formattedDate = formattedDate;
-                bookmarkData.push(bookmark);
+                bookmarkLinks.push(bookmark);
             }
         }
 
-        bookmarkData.sort((a, b) => {
+        bookmarkLinks.sort((a, b) => {
             if (a.formattedDate === '-') {
                 return 1;
             }
@@ -46,7 +46,7 @@ chrome.storage.local.get()
             return -1;
         });
 
-        bookmarkData.forEach((bookmark) => {
+        for (const bookmark of bookmarkLinks) {
             const tableRow = document.createElement('tr');
             const months = [
                 'Jan',
@@ -89,7 +89,7 @@ chrome.storage.local.get()
 
             tableRow.classList.toggle('table-row');
             tableBody.appendChild(tableRow);
-        });
+        }
     })
     .catch((error) => {
         console.error('Failed to load bookmarks from local storage:', error);
@@ -154,12 +154,12 @@ document.querySelector('#import').addEventListener('click', () => {
 
 function updateSort(sortType, sortDirection) {
     try {
-        document.querySelectorAll('.table-row').forEach((element) => {
+        for (const element of document.querySelectorAll('.table-row')) {
             element.remove();
-        });
+        }
 
         if (sortType === 'addTime') {
-            bookmarkData.sort((a, b) => {
+            bookmarkLinks.sort((a, b) => {
                 if (a.formattedDate === '-') {
                     return 1;
                 }
@@ -173,7 +173,7 @@ function updateSort(sortType, sortDirection) {
                 return -1;
             });
         } else {
-            bookmarkData.sort((a, b) => {
+            bookmarkLinks.sort((a, b) => {
                 let aValue = a[sortType];
                 let bValue = b[sortType];
 
@@ -191,10 +191,10 @@ function updateSort(sortType, sortDirection) {
         }
 
         if (sortDirection === 1) {
-            bookmarkData.reverse();
+            bookmarkLinks.reverse();
         }
 
-        bookmarkData.forEach((bookmark) => {
+        for (const bookmark of bookmarkLinks) {
             const tableRow = document.createElement('tr');
             const months = [
                 'Jan',
@@ -237,25 +237,25 @@ function updateSort(sortType, sortDirection) {
 
             tableRow.classList.toggle('table-row');
             tableBody.appendChild(tableRow);
-        });
+        }
     } catch (error) {
         console.error('Failed to update bookmark table sorting:', error);
     }
 }
 
 // Add event listeners for sorting
-document.querySelectorAll('th[data-sort-type]').forEach((element) => {
+for (const element of document.querySelectorAll('th[data-sort-type]')) {
     element.addEventListener('click', () => {
         const sortType = element.getAttribute('data-sort-type');
         const sortDirection = element.classList.contains('active') ? 1 : 0;
 
-        document.querySelectorAll('th').forEach((header) => {
+        for (const header of document.querySelectorAll('th')) {
             header.classList.remove('active');
-        });
+        }
 
         // Add active class to clicked header
         element.classList.add('active');
 
         updateSort(sortType, sortDirection);
     });
-});
+}

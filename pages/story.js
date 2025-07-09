@@ -58,9 +58,9 @@ async function main() {
     let wordCounterSpan;
     if (settings.chapterWordCounter && document.querySelector('#chap_select')) {
         let wordCounter = 0;
-        document.querySelectorAll('p').forEach((element) => {
+        for (const element of document.querySelectorAll('p')) {
             wordCounter += element.innerText.trim().split(/\s+/).length;
-        });
+        }
 
         wordCounterSpan = document.createElement('span');
         wordCounterSpan.innerHTML = `<br>Words in chapter: <b>${wordCounter}</b>`;
@@ -244,12 +244,14 @@ async function main() {
             const allFicText = document.querySelector('#storytext1').parentElement;
             allFicText.id = 'storytext';
             if (settings.allowCopy) {
-                allFicText.querySelectorAll('*').forEach((element) => (element.style.userSelect = 'text'));
+                for (const element of allFicText.querySelectorAll('*')) {
+                    element.style.userSelect = 'text';
+                }
             }
             let isBookmarked = false;
             let lastChapterBookmark = -1;
             if (settings.bookmarkButton) {
-                document.querySelectorAll('.bookmark').forEach((element) => {
+                for (const element of document.querySelectorAll('.bookmark')) {
                     element.addEventListener('click', () => {
                         if (
                             isBookmarked &&
@@ -289,7 +291,7 @@ async function main() {
                             });
                         }
                     });
-                });
+                }
 
                 chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
                     const bookmarkElement = document.querySelector(`#bookmark${response.chapter}`);
@@ -383,11 +385,11 @@ function switchTheme(
     h3s
 ) {
     const setColor = (colorArray) => {
-        colorArray.forEach((colorItem) => {
+        for (const colorItem of colorArray) {
             if (colorItem && colorItem[0]) {
                 colorItem[0].style.color = colorItem[1];
             }
-        });
+        }
     };
 
     if (rating.style.color === '#088383') {
@@ -404,9 +406,9 @@ function switchTheme(
             [follows, '#ffffff'],
             [status, '#ff9ce0'],
         ]);
-        h3s.forEach((element) => {
+        for (const element of h3s) {
             setColor([[element, '#ffffff']]);
-        });
+        }
 
         rating.parentElement.classList = 'xgray';
         rating.parentElement.style.color = '#d0d0d0';
@@ -424,9 +426,9 @@ function switchTheme(
             [follows, '#000000'],
             [status, '#00631f'],
         ]);
-        h3s.forEach((element) => {
+        for (const element of h3s) {
             setColor([[element, '#000000']]);
-        });
+        }
 
         rating.parentElement.classList = 'xgray';
         rating.parentElement.style.color = '';
@@ -451,7 +453,7 @@ async function makeSpans() {
         }
     }
 
-    metaSpans.forEach((span) => {
+    for (const span of metaSpans) {
         const item = span.innerText;
         let type = '';
         if (item.includes('Rated')) {
@@ -477,7 +479,7 @@ async function makeSpans() {
         if (type) {
             span.classList.add(type);
         }
-    });
+    }
 
     const characterSpan = descriptionDiv.querySelector(':not([class])');
     if (characterSpan) {
