@@ -292,31 +292,22 @@ export const processMetaSpans = (imagesParent, pageType) => {
                 spanType = 'published';
             } else if (item.includes('Complete')) {
                 spanType = 'status';
-            }
-            
-            // Page-specific span types
-            if (pageType === 'forum') {
-                if (item.includes('Topics')) {
-                    spanType = 'top';
-                } else if (item.includes('Posts')) {
-                    spanType = 'pst';
-                } else if (item.includes('Since')) {
-                    spanType = 'since';
-                } else if (item.includes('Admin')) {
-                    spanType = 'admin';
-                }
-            } else if (pageType === 'communities') {
-                if (item.includes('Staff')) {
-                    spanType = 'stf';
-                } else if (item.includes('Archive')) {
-                    spanType = 'arh';
-                } else if (item.includes('Followers')) {
-                    spanType = 'fol';
-                } else if (item.includes('Since')) {
-                    spanType = 'since';
-                } else if (item.includes('Founder')) {
-                    spanType = 'founder';
-                }
+            } else if (item.includes('Topics')) {
+                spanType = 'top';
+            } else if (item.includes('Posts')) {
+                spanType = 'pst';
+            } else if (item.includes('Since')) {
+                spanType = 'since';
+            } else if (item.includes('Admin')) {
+                spanType = 'admin';
+            } else if (item.includes('Staff')) {
+                spanType = 'stf';
+            } else if (item.includes('Archive')) {
+                spanType = 'arh';
+            } else if (item.includes('Followers')) {
+                spanType = 'fol';
+            } else if (item.includes('Founder')) {
+                spanType = 'founder';
             }
 
             if (spanType) {

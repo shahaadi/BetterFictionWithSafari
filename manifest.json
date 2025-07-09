@@ -34,45 +34,17 @@
                 "https://www.fanfiction.net/misc/*/*",
                 "https://www.fanfiction.net/movie/*/*",
                 "https://www.fanfiction.net/play/*/*",
-                "https://www.fanfiction.net/tv/*/*"
+                "https://www.fanfiction.net/tv/*/*",
+                "https://www.fanfiction.net/u/*/*",
+                "https://www.fanfiction.net/*/*/*/*",
+                "https://www.fanfiction.net/search/*",
+                "https://www.fanfiction.net/communities/*/*/*",
+                "https://www.fanfiction.net/community/*/*/*",
+                "https://www.fanfiction.net/forums/*/*/*",
+                "https://www.fanfiction.net/j/*"
             ],
             "run_at": "document_end",
-            "js": ["pages/list.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/u/*/*"],
-            "run_at": "document_end",
-            "js": ["pages/profile.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/*/*/*/*"],
-            "run_at": "document_end",
-            "js": ["pages/crossover.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/search/*"],
-            "run_at": "document_end",
-            "js": ["pages/search.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/communities/*/*/*"],
-            "run_at": "document_end",
-            "js": ["pages/communities.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/community/*/*/*"],
-            "run_at": "document_end",
-            "js": ["pages/community.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/forums/*/*/*"],
-            "run_at": "document_end",
-            "js": ["pages/forum.js"]
-        },
-        {
-            "matches": ["https://www.fanfiction.net/j/*"],
-            "run_at": "document_end",
-            "js": ["pages/just-in.js"]
+            "js": ["pages/display.js"]
         }
     ],
     "host_permissions": ["https://www.fanfiction.net/*"],
