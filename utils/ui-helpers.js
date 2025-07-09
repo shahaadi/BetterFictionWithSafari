@@ -23,18 +23,6 @@ export const createMessagePromise = (messageType = 'info') => {
 };
 
 /**
- * Processes meta spans in description divs
- * @param {Element} descriptionDiv - The description div element
- * @returns {NodeList} Meta spans
- */
-export const processMetaSpans = (descriptionDiv) => {
-    const metaItems = descriptionDiv.innerText.split(' - ');
-    const newString = metaItems.map((item) => `<span>${item}</span>`).join(' - ');
-    descriptionDiv.innerHTML = newString;
-    return descriptionDiv.querySelectorAll('span');
-};
-
-/**
  * Applies big covers styling to images
  * @param {NodeList} images - Image elements
  * @param {NodeList} imagesParent - Parent container elements
@@ -149,134 +137,6 @@ export const processSpan = (span, className) => {
 };
 
 /**
- * Processes meta spans for story pages (search, just-in, crossover, community, profile)
- * @param {NodeList} imagesParent - Parent container elements
- */
-export const processStoryMetaSpans = (imagesParent) => {
-    imagesParent.forEach((element) => {
-        const descriptionDiv = element.querySelector('div').querySelector('div');
-        const metaSpans = processMetaSpans(descriptionDiv);
-
-        if (!metaSpans[0].innerText.includes('Rated')) {
-            if (metaSpans[0].innerText === 'Crossover') {
-                metaSpans[0].classList = 'fran';
-                metaSpans[1].classList = 'fran';
-                metaSpans[3].classList = 'lang';
-                if (!metaSpans[4].innerText.includes('Chapters')) {
-                    metaSpans[4].classList = 'genres';
-                }
-            } else {
-                metaSpans[0].classList = 'fran';
-                metaSpans[2].classList = 'lang';
-                if (!metaSpans[3].innerText.includes('Chapters')) {
-                    metaSpans[3].classList = 'genres';
-                }
-            }
-        } else {
-            metaSpans[1].classList = 'lang';
-            if (!metaSpans[2].innerText.includes('Chapters')) {
-                metaSpans[2].classList = 'genres';
-            }
-        }
-
-        if (metaSpans[metaSpans.length - 1].innerText === 'Complete') {
-            metaSpans[metaSpans.length - 1].classList = 'status';
-        }
-
-        // Process common spans
-        const wordsSpan = descriptionDiv.querySelector('.words');
-        const chaptersSpan = descriptionDiv.querySelector('.chapters');
-        const favSpan = descriptionDiv.querySelector('.fav');
-        const followSpan = descriptionDiv.querySelector('.follow');
-        const reviewSpan = descriptionDiv.querySelector('.review');
-
-        processSpan(wordsSpan, 'words');
-        processSpan(chaptersSpan, 'chapters');
-        processSpan(favSpan, 'fav');
-        processSpan(followSpan, 'fol');
-        processSpan(reviewSpan, 'rew');
-    });
-};
-
-/**
- * Processes meta spans for forum pages
- * @param {NodeList} imagesParent - Parent container elements
- */
-export const processForumMetaSpans = (imagesParent) => {
-    imagesParent.forEach((element) => {
-        const descriptionDiv = element.querySelector('div').querySelector('div');
-        const metaSpans = processMetaSpans(descriptionDiv);
-
-        metaSpans[0].classList = 'lang';
-
-        metaSpans.forEach((span) => {
-            const item = span.innerText;
-            let spanType = '';
-            if (item.includes('Topics')) {
-                spanType = 'top';
-            } else if (item.includes('Posts')) {
-                spanType = 'pst';
-            } else if (item.includes('Since')) {
-                spanType = 'since';
-            } else if (item.includes('Admin')) {
-                spanType = 'admin';
-            }
-
-            if (spanType) {
-                span.classList.add(spanType);
-            }
-        });
-
-        const topicsSpan = descriptionDiv.querySelector('.top');
-        const postsSpan = descriptionDiv.querySelector('.pst');
-
-        processSpan(topicsSpan, 'top');
-        processSpan(postsSpan, 'pst');
-    });
-};
-
-/**
- * Processes meta spans for communities pages
- * @param {NodeList} imagesParent - Parent container elements
- */
-export const processCommunitiesMetaSpans = (imagesParent) => {
-    imagesParent.forEach((element) => {
-        const descriptionDiv = element.querySelector('div').querySelector('div');
-        const metaSpans = processMetaSpans(descriptionDiv);
-
-        metaSpans[0].classList = 'lang';
-
-        metaSpans.forEach((span) => {
-            const item = span.innerText;
-            let spanType = '';
-            if (item.includes('Staff')) {
-                spanType = 'stf';
-            } else if (item.includes('Archive')) {
-                spanType = 'arh';
-            } else if (item.includes('Followers')) {
-                spanType = 'fol';
-            } else if (item.includes('Since')) {
-                spanType = 'since';
-            } else if (item.includes('Founder')) {
-                spanType = 'founder';
-            }
-
-            if (spanType) {
-                span.classList.add(spanType);
-            }
-        });
-
-        const staffSpan = descriptionDiv.querySelector('.stf');
-        const followSpan = descriptionDiv.querySelector('.fol');
-        const archiveSpan = descriptionDiv.querySelector('.arh');
-
-        processSpan(staffSpan, 'stf');
-        processSpan(followSpan, 'fol');
-        processSpan(archiveSpan, 'arh');
-    });
-};
-
-/**
  * Applies better info styling with page-specific customizations
  * @param {NodeList} imagesParent - Parent container elements
  * @param {Object} settings - Extension settings
@@ -351,26 +211,69 @@ export const applyFandomStyling = (imagesParent) => {
 };
 
 /**
- * Processes meta spans for canon pages
+ * Universal meta span processor that handles common functionality for all page types
  * @param {NodeList} imagesParent - Parent container elements
+ * @param {string} pageType - Type of page for specific processing
  */
-export const processCanonMetaSpans = (imagesParent) => {
+export const processMetaSpans = (imagesParent, pageType) => {
     for (const element of imagesParent) {
-        const descriptionDiv = element.querySelector('div').querySelector('div');
-        
-        // Use the existing processMetaSpans function to create spans
-        const metaSpans = processMetaSpans(descriptionDiv);
+        const descriptionDiv = element.querySelector('div')?.querySelector('div');
+        if (!descriptionDiv) continue;
 
-        // Apply canon-specific class assignments
-        metaSpans[1].classList = 'lang';
-        if (!metaSpans[2].innerText.includes('Chapters')) {
-            metaSpans[2].classList = 'genres';
+        // Create spans from description text
+        const metaItems = descriptionDiv.innerText.split(' - ');
+        const newString = metaItems.map((item) => `<span>${item}</span>`).join(' - ');
+        descriptionDiv.innerHTML = newString;
+        const metaSpans = descriptionDiv.querySelectorAll('span');
+        if (!metaSpans || metaSpans.length === 0) continue;
+
+        // Apply page-specific class assignments with null checks
+        if (pageType === 'story' || pageType === 'search' || pageType === 'just-in' || pageType === 'crossover' || pageType === 'community' || pageType === 'profile') {
+            // Story pages logic
+            if (metaSpans[0] && !metaSpans[0].innerText.includes('Rated')) {
+                if (metaSpans[0].innerText === 'Crossover') {
+                    if (metaSpans[0]) metaSpans[0].classList = 'fran';
+                    if (metaSpans[1]) metaSpans[1].classList = 'fran';
+                    if (metaSpans[3]) metaSpans[3].classList = 'lang';
+                    if (metaSpans[4] && !metaSpans[4].innerText.includes('Chapters')) {
+                        metaSpans[4].classList = 'genres';
+                    }
+                } else {
+                    if (metaSpans[0]) metaSpans[0].classList = 'fran';
+                    if (metaSpans[2]) metaSpans[2].classList = 'lang';
+                    if (metaSpans[3] && !metaSpans[3].innerText.includes('Chapters')) {
+                        metaSpans[3].classList = 'genres';
+                    }
+                }
+            } else {
+                if (metaSpans[1]) metaSpans[1].classList = 'lang';
+                if (metaSpans[2] && !metaSpans[2].innerText.includes('Chapters')) {
+                    metaSpans[2].classList = 'genres';
+                }
+            }
+
+            if (metaSpans[metaSpans.length - 1] && metaSpans[metaSpans.length - 1].innerText === 'Complete') {
+                metaSpans[metaSpans.length - 1].classList = 'status';
+            }
+        } else if (pageType === 'forum' || pageType === 'communities') {
+            // Forum and communities pages logic
+            if (metaSpans[0]) metaSpans[0].classList = 'lang';
+        } else if (pageType === 'canon') {
+            // Canon pages logic
+            if (metaSpans[1]) metaSpans[1].classList = 'lang';
+            if (metaSpans[2] && !metaSpans[2].innerText.includes('Chapters')) {
+                metaSpans[2].classList = 'genres';
+            }
         }
 
-        // Apply common span type classifications (same logic as other functions)
+        // Apply universal span type classifications with null checks
         for (const span of metaSpans) {
+            if (!span) continue;
+            
             const item = span.innerText;
             let spanType = '';
+            
+            // Universal span types (common across all pages)
             if (item.includes('Rated')) {
                 spanType = 'rated';
             } else if (item.includes('Chapters')) {
@@ -390,19 +293,46 @@ export const processCanonMetaSpans = (imagesParent) => {
             } else if (item.includes('Complete')) {
                 spanType = 'status';
             }
+            
+            // Page-specific span types
+            if (pageType === 'forum') {
+                if (item.includes('Topics')) {
+                    spanType = 'top';
+                } else if (item.includes('Posts')) {
+                    spanType = 'pst';
+                } else if (item.includes('Since')) {
+                    spanType = 'since';
+                } else if (item.includes('Admin')) {
+                    spanType = 'admin';
+                }
+            } else if (pageType === 'communities') {
+                if (item.includes('Staff')) {
+                    spanType = 'stf';
+                } else if (item.includes('Archive')) {
+                    spanType = 'arh';
+                } else if (item.includes('Followers')) {
+                    spanType = 'fol';
+                } else if (item.includes('Since')) {
+                    spanType = 'since';
+                } else if (item.includes('Founder')) {
+                    spanType = 'founder';
+                }
+            }
 
             if (spanType) {
                 span.classList.add(spanType);
             }
         }
 
-        // Handle character span (canon-specific)
-        const characterSpan = descriptionDiv.querySelector(':not([class])');
-        if (characterSpan) {
-            characterSpan.className = 'characters';
+        // Handle page-specific special cases with null checks
+        if (pageType === 'canon') {
+            const characterSpan = descriptionDiv.querySelector(':not([class])');
+            if (characterSpan) {
+                characterSpan.className = 'characters';
+            }
         }
 
-        // Use the existing processSpan function for all span processing
+        // Process common spans with null checks
         const wordsSpan = descriptionDiv.querySelector('.words');
         const chaptersSpan = descriptionDiv.querySelector('.chapters');
         const favSpan = descriptionDiv.querySelector('.fav');
@@ -414,6 +344,21 @@ export const processCanonMetaSpans = (imagesParent) => {
         processSpan(favSpan, 'fav');
         processSpan(followSpan, 'fol');
         processSpan(reviewSpan, 'rew');
+
+        // Page-specific span processing
+        if (pageType === 'forum') {
+            const topicsSpan = descriptionDiv.querySelector('.top');
+            const postsSpan = descriptionDiv.querySelector('.pst');
+            processSpan(topicsSpan, 'top');
+            processSpan(postsSpan, 'pst');
+        } else if (pageType === 'communities') {
+            const staffSpan = descriptionDiv.querySelector('.stf');
+            const followSpan = descriptionDiv.querySelector('.fol');
+            const archiveSpan = descriptionDiv.querySelector('.arh');
+            processSpan(staffSpan, 'stf');
+            processSpan(followSpan, 'fol');
+            processSpan(archiveSpan, 'arh');
+        }
     }
 };
 
@@ -458,25 +403,8 @@ export const processPage = async (pageType) => {
     const imagesParent = document.querySelectorAll(imagesParentSelector);
     const images = document.querySelectorAll(imagesSelector);
 
-    // Process meta spans based on page type
-    switch (pageType) {
-        case 'search':
-        case 'just-in':
-        case 'crossover':
-        case 'community':
-        case 'profile':
-            processStoryMetaSpans(imagesParent);
-            break;
-        case 'forum':
-            processForumMetaSpans(imagesParent);
-            break;
-        case 'communities':
-            processCommunitiesMetaSpans(imagesParent);
-            break;
-        case 'canon':
-            processCanonMetaSpans(imagesParent);
-            break;
-    }
+    // Process meta spans using universal function
+    processMetaSpans(imagesParent, pageType);
 
     // Apply common styling
     if (settings.bigCovers) {
