@@ -10,9 +10,9 @@ Take your FanFiction.net browsing and reading to the next level with BetterFicti
 
 - **Restriction-Free Reading**: Remove text copying limitations for a more flexible reading experience.
 
-- **Chapter Word Counter**: See how many words each chapter contains at a glance.
+- **Chapter Word Counter**: See how many wordsMetaType each chapter contains at a glance.
 
-- **Enhanced Sorting**: Sort fanfics on user profiles by favorites or followers for easier discovery.
+- **Enhanced Sorting**: Sort fanfics on user profiles by favorites or followersMetaType for easier discovery.
 
 - **Full Fic Display**: Read an entire story on a single page without constant clicking.
 

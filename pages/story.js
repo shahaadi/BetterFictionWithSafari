@@ -10,341 +10,364 @@ let id;
 let storyName;
 
 async function main() {
-    try {
-        // Dynamic import of utility functions
-        const { createMessagePromise, processSpan, applyBetterInfoColor } = await import(chrome.runtime.getURL('utils/ui-helpers.js'));
+    const messagePromise = new Promise((resolve) => {
+        chrome.runtime.sendMessage({ message: 'get-info' }, (response) => {
+            resolve(response.result);
+        });
+    });
 
-        const settings = await createMessagePromise();
+    const settings = await messagePromise;
 
-        // Get chapter and id from url
-        if (match) {
-            chapter = match[2];
-            id = match[1];
-        } else {
-            chapter = 1;
-            id = '0'; // declaring later
-        }
+    // Get chapter and id from url
+    if (match) {
+        chapter = match[2];
+        id = match[1];
+    } else {
+        chapter = 1;
+        id = '0'; // declaring later
+    }
 
-        storyName = document.querySelectorAll('b')[5].innerText;
+    storyName = document.querySelectorAll('b')[5].innerText;
 
-        await makeSpans();
+    await makeSpans();
 
-        // Declaring spans
-        const rating = document.querySelector('.rated');
-        const language = document.querySelector('.lang');
-        const genres = document.querySelector('.genres');
-        const chapters = document.querySelector('.chapters');
-        const chaptersCount = document.querySelector('.chapters-cnt');
-        const words = document.querySelector('.words');
-        const wordsCount = document.querySelector('.words-cnt');
-        const reviews = document.querySelector('.review');
-        let reviewsCount = document.querySelector('.rew-cnt');
-        const favs = document.querySelector('.fav');
-        const favsCount = document.querySelector('.fav-cnt');
-        const follows = document.querySelector('.follow');
-        const followsCount = document.querySelector('.fol-cnt');
-        const updated = document.querySelector('.updated');
-        const published = document.querySelector('.published');
-        const characters = document.querySelector('.characters');
-        const status = document.querySelector('.status');
+    // Declaring spans
+    const rating = document.querySelector('.rated');
+    const language = document.querySelector('.lang');
+    const genres = document.querySelector('.genres');
+    const chapters = document.querySelector('.chapters');
+    const chaptersCount = document.querySelector('.chapters-cnt');
+    const words = document.querySelector('.words');
+    const wordsCount = document.querySelector('.words-cnt');
+    const reviews = document.querySelector('.review');
+    let reviewsCount = document.querySelector('.rew-cnt');
+    const favs = document.querySelector('.fav');
+    const favsCount = document.querySelector('.fav-cnt');
+    const follows = document.querySelector('.follow');
+    const followsCount = document.querySelector('.fol-cnt');
+    const updated = document.querySelector('.updated');
+    const published = document.querySelector('.published');
+    const characters = document.querySelector('.characters');
+    const status = document.querySelector('.status');
 
-        if (reviewsCount) {
-            reviewsCount = reviewsCount.querySelector('a');
-        }
+    if (reviewsCount) {
+        reviewsCount = reviewsCount.querySelector('a');
+    }
 
-        // Story Word Counter
-        let wordCounterSpan;
-        if (settings.chapterWordCounter && document.querySelector('#chap_select')) {
-            let wordCounter = 0;
-            for (const element of document.querySelectorAll('p')) {
-                wordCounter += element.innerText.trim().split(/\s+/).length;
-            }
+    // Story Word Counter
+    let wordCounterSpan;
+    if (settings.chapterWordCounter && document.querySelector('#chap_select')) {
+        let wordCounter = 0;
+        document.querySelectorAll('p').forEach((element) => {
+            wordCounter += element.innerText.trim().split(/\s+/).length;
+        });
 
-            wordCounterSpan = document.createElement('span');
-            wordCounterSpan.innerHTML = `<br>Words in chapter: <b>${wordCounter}</b>`;
-            wordCounterSpan.style.color = '#000000';
+        wordCounterSpan = document.createElement('span');
+        wordCounterSpan.innerHTML = `<br>Words in chapter: <b>${wordCounter}</b>`;
+        wordCounterSpan.style.color = '#000000';
 
-            const navigationBar = document.querySelector('[style="float:right; "]');
-            navigationBar.appendChild(wordCounterSpan);
-            rating.parentElement.before(navigationBar);
-        }
+        const navigationBar = document.querySelector('[style="float:right; "]');
+        navigationBar.appendChild(wordCounterSpan);
+        rating.parentElement.before(navigationBar);
+    }
 
-        if (settings.bookmarkButton) {
-            // Create bookmark button
-            const bookmarkButton = document.createElement('button');
-            bookmarkButton.type = 'button';
-            bookmarkButton.className = 'btn pull-right';
-            bookmarkButton.style.marginRight = '5px';
-            bookmarkButton.style.height = '30px';
-            bookmarkButton.title = 'bookmark';
+    if (settings.bookmarkButton) {
+        // Create bookmark button
+        const bookmarkButton = document.createElement('button');
+        bookmarkButton.type = 'button';
+        bookmarkButton.className = 'btn pull-right';
+        bookmarkButton.style.marginRight = '5px';
+        bookmarkButton.style.height = '30px';
+        bookmarkButton.title = 'bookmark';
 
-            bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
+        bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
 
-            const followButton = document.querySelector('.icon-heart');
-            followButton.before(bookmarkButton);
-            followButton.remove();
-            bookmarkButton.before(followButton);
+        const followButton = document.querySelector('.icon-heart');
+        followButton.before(bookmarkButton);
+        followButton.remove();
+        bookmarkButton.before(followButton);
 
-            let isBookmarked = false;
+        let isBookmarked = false;
 
-            bookmarkButton.addEventListener('click', () => {
-                if (isBookmarked) {
-                    isBookmarked = false;
-                    bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
-                    chrome.runtime.sendMessage({
-                        message: 'del-bookmark',
-                        id: id,
-                    });
-                } else {
-                    isBookmarked = true;
-                    bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
-                    let fandom = document.querySelector('#pre_story_links').querySelectorAll('a');
-                    if (fandom[1]) {
-                        fandom = fandom[1].innerText;
-                    } else {
-                        fandom = fandom[0].innerText;
-                    }
-
-                    chrome.runtime.sendMessage({
-                        message: 'set-bookmark',
-                        chapter: Number(chapter),
-                        id: id,
-                        fandom: fandom,
-                        author: document.querySelector('#profile_top').querySelector('a').innerText,
-                        storyName: document.querySelectorAll('b')[5].innerText,
-                    });
-                }
-            });
-
-            // Auto bookmark on last chapter
-            if (settings.autoSave) {
-                chrome.runtime.sendMessage(
-                    { message: 'auto-bookmark', chapter, id: id },
-                    (response) => {
-                        if (response.status) {
-                            bookmarkButton.click();
-                        }
-                    }
-                );
-            }
-
-            // Current chapter bookmark check
-            chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
-                if (Number(response.chapter) === Number(chapter) && !isBookmarked) {
-                    isBookmarked = true;
-                    bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
-                }
-            });
-
-            // Creating go-to-bookmark button
-            const goButton = document.createElement('button');
-            goButton.type = 'button';
-            goButton.className = 'btn pull-right';
-            goButton.innerHTML = 'Go to bookmark';
-            goButton.style.marginRight = '5px';
-            bookmarkButton.before(goButton);
-
-            goButton.addEventListener('click', () => {
-                chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
-                    if (Number(response.chapter) !== 0) {
-                        const chapterLink = `https://www.fanfiction.net/s/${response.id}/${response.chapter}/${response.storyName}`;
-                        window.open(chapterLink, '_self');
-                    }
+        bookmarkButton.addEventListener('click', () => {
+            if (isBookmarked) {
+                isBookmarked = false;
+                bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
+                chrome.runtime.sendMessage({
+                    message: 'del-bookmark',
+                    id: id,
                 });
-            });
+            } else {
+                isBookmarked = true;
+                bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
+                let fandom = document.querySelector('#pre_story_links').querySelectorAll('a');
+                if (fandom[1]) {
+                    fandom = fandom[1].innerText;
+                } else {
+                    fandom = fandom[0].innerText;
+                }
+
+                chrome.runtime.sendMessage({
+                    message: 'set-bookmark',
+                    chapter: Number(chapter),
+                    id: id,
+                    fandom: fandom,
+                    author: document.querySelector('#profile_top').querySelector('a').innerText,
+                    storyName: document.querySelectorAll('b')[5].innerText,
+                });
+            }
+        });
+
+        // Auto bookmark on last chapter
+        if (settings.autoSave) {
+            chrome.runtime.sendMessage(
+                { message: 'auto-bookmark', chapter, id: id },
+                (response) => {
+                    if (response.status) {
+                        bookmarkButton.click();
+                    }
+                }
+            );
         }
 
-        // All on one page button
-        if (settings.allFicButton && document.querySelector('#chap_select')) {
-            const allFicButton = document.createElement('button');
-            allFicButton.type = 'button';
-            allFicButton.className = 'btn';
-            allFicButton.innerHTML = 'Entire Work';
-            allFicButton.style.marginLeft = '5px';
+        // Current chapter bookmark check
+        chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
+            if (Number(response.chapter) === Number(chapter) && !isBookmarked) {
+                isBookmarked = true;
+                bookmarkButton.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
+            }
+        });
 
-            document.querySelector('[onclick="toggleTheme();"]').after(allFicButton);
+        // Creating go-to-bookmark button
+        const goButton = document.createElement('button');
+        goButton.type = 'button';
+        goButton.className = 'btn pull-right';
+        goButton.innerHTML = 'Go to bookmark';
+        goButton.style.marginRight = '5px';
+        bookmarkButton.before(goButton);
 
-            const bookmarkChapter = () => `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
-
-            const sepSpan = (index, chaptersArray) => {
-                const span = document.createElement('span');
-                if (index + 1 === chaptersArray.length) {
-                    span.innerHTML = '<br><br><br><hr size="1" noshade=""><br><br><br>';
-                } else if (settings.bookmarkButton) {
-                    span.innerHTML = `<br><br><br><br><h3>${chaptersArray[index + 1]}</h3><button type="button" class="btn pull-right bookmark" title="bookmark" style="margin-right: 5px; height: 30px;" id="bookmark${index + 2}">${bookmarkChapter()}</button><hr size="1" noshade="" style="background: darkgrey; height: 2px;"><br><br><br>`;
-                } else {
-                    span.innerHTML = `<br><br><br><br><h3>${chaptersArray[index + 1]}</h3><hr size="1" noshade="" style="background: darkgrey; height: 2px;"><br><br><br>`;
+        goButton.addEventListener('click', () => {
+            chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
+                if (Number(response.chapter) !== 0) {
+                    const chapterLink = `https://www.fanfiction.net/s/${response.id}/${response.chapter}/${response.storyName}`;
+                    window.open(chapterLink, '_self');
                 }
-                return span;
+            });
+        });
+    }
+
+    // All on one page button
+    if (settings.allFicButton && document.querySelector('#chap_select')) {
+        const allFicButton = document.createElement('button');
+        allFicButton.type = 'button';
+        allFicButton.className = 'btn';
+        allFicButton.innerHTML = 'Entire Work';
+        allFicButton.style.marginLeft = '5px';
+
+        document.querySelector('[onclick="toggleTheme();"]').after(allFicButton);
+
+        const bookmarkChapter = () => `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
+
+        const sepSpan = (index, chaptersArray) => {
+            const span = document.createElement('span');
+            if (index + 1 === chaptersArray.length) {
+                span.innerHTML = '<br><br><br><hr size="1" noshade=""><br><br><br>';
+            } else if (settings.bookmarkButton) {
+                span.innerHTML = `<br><br><br><br><h3>${chaptersArray[index + 1]}</h3><button type="button" class="btn pull-right bookmark" title="bookmark" style="margin-right: 5px; height: 30px;" id="bookmark${index + 2}">${bookmarkChapter()}</button><hr size="1" noshade="" style="background: darkgrey; height: 2px;"><br><br><br>`;
+            } else {
+                span.innerHTML = `<br><br><br><br><h3>${chaptersArray[index + 1]}</h3><hr size="1" noshade="" style="background: darkgrey; height: 2px;"><br><br><br>`;
+            }
+            return span;
+        };
+
+        const getChapterURL = (chapterNumber) => `https://www.fanfiction.net/s/${id}/${chapterNumber}`;
+
+        allFicButton.addEventListener('click', async () => {
+            const count = Number(chaptersCount.innerText);
+            const currentChapter = Number(chapter);
+
+            const newFullStory = document.createElement('div');
+            const chaptersArray = [];
+            const chaptersName = document.querySelector('#chap_select').innerText.split('\n');
+            let fetchedChapter;
+
+            const getQuery = async (url, index) => {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error('Network response was not ok');
+
+                    const responseText = await response.text();
+                    const htmlCode = new DOMParser().parseFromString(responseText, 'text/html');
+
+                    const nextChapter = htmlCode.querySelector('#storytext');
+                    nextChapter.id = `storytext${index + 1}`;
+
+                    fetchedChapter = nextChapter;
+                    return 1;
+                } catch (error) {
+                    console.error(`Failed to fetch chapter content from URL: ${url}`, error);
+                    return 0;
+                }
             };
 
-            const getChapterURL = (chapterNumber) => `https://www.fanfiction.net/s/${id}/${chapterNumber}`;
-
-            allFicButton.addEventListener('click', async () => {
-                const count = Number(chaptersCount.innerText);
-                const currentChapter = Number(chapter);
-
-                const newFullStory = document.createElement('div');
-                const chaptersArray = [];
-                const chaptersName = document.querySelector('#chap_select').innerText.split('\n');
-                let fetchedChapter;
-
-                const getQuery = async (url, index) => {
-                    try {
-                        const response = await fetch(url);
-                        if (!response.ok) throw new Error('Network response was not ok');
-
-                        const responseText = await response.text();
-                        const htmlCode = new DOMParser().parseFromString(responseText, 'text/html');
-
-                        const nextChapter = htmlCode.querySelector('#storytext');
-                        nextChapter.id = `storytext${index + 1}`;
-
-                        fetchedChapter = nextChapter;
-                        return 1;
-                    } catch (error) {
-                        console.error('Failed to fetch chapter:', error);
-                        return 0;
+            for (let i = 0; i < count; i++) {
+                const url = getChapterURL(i + 1);
+                if (!(await getQuery(url, i))) {
+                    break;
+                } else {
+                    if (i === 0) {
+                        document.querySelector('#storytext').before(sepSpan(-1, chaptersName));
                     }
-                };
-
-                for (let i = 0; i < count; i++) {
-                    const url = getChapterURL(i + 1);
-                    if (!(await getQuery(url, i))) {
-                        break;
-                    } else {
-                        if (i === 0) {
-                            document.querySelector('#storytext').before(sepSpan(-1, chaptersName));
-                        }
-                        document.querySelector('#storytext').before(fetchedChapter);
-                        document.querySelector('#storytext').before(sepSpan(i, chaptersName));
-                    }
+                    document.querySelector('#storytext').before(fetchedChapter);
+                    document.querySelector('#storytext').before(sepSpan(i, chaptersName));
                 }
+            }
 
-                // chaptersArray.sort((a, b) => {
-                //     let aNum = Number(a.id.replace(/[a-zA-Z]/g, "")), bNum = Number(b.id.replace(/[a-zA-Z]/g, ""));
+            // chaptersArray.sort((a, b) => {
+            //     let aNum = Number(a.id.replace(/[a-zA-Z]/g, "")), bNum = Number(b.id.replace(/[a-zA-Z]/g, ""));
 
-                //     if (aNum > bNum) return 1;
-                //     else return -1;
-                // })
+            //     if (aNum > bNum) return 1;
+            //     else return -1;
+            // })
 
-                // console.log(chaptersArray);
+            // console.log(chaptersArray);
 
-                // document.querySelector("#storytext").before(sepSpan(-1, chaptersName));
-                // for (let i = 0; i < count; ++i) {
-                //     if (!chaptersArray[i]) break;
-                //     document.querySelector("#storytext").before(chaptersArray[i]);
-                //     document.querySelector("#storytext").before(sepSpan(i, chaptersName));
-                // }
+            // document.querySelector("#storytext").before(sepSpan(-1, chaptersName));
+            // for (let i = 0; i < count; ++i) {
+            //     if (!chaptersArray[i]) break;
+            //     document.querySelector("#storytext").before(chaptersArray[i]);
+            //     document.querySelector("#storytext").before(sepSpan(i, chaptersName));
+            // }
 
-                // wtf
-                document.querySelector('#storytext').remove();
-                const allFicText = document.querySelector('#storytext1').parentElement;
-                allFicText.id = 'storytext';
-                if (settings.allowCopy) {
-                    for (const element of allFicText.querySelectorAll('*')) {
-                        element.style.userSelect = 'text';
-                    }
-                }
-                let isBookmarked = false;
-                let lastChapterBookmark = -1;
-                if (settings.bookmarkButton) {
-                    for (const element of document.querySelectorAll('.bookmark')) {
-                        element.addEventListener('click', () => {
-                            if (
-                                isBookmarked &&
-                                lastChapterBookmark === Number(element.id.replace(/[a-zA-Z]/g, ''))
-                            ) {
-                                lastChapterBookmark = -1;
-                                isBookmarked = false;
-                                element.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
-                                chrome.runtime.sendMessage({
-                                    message: 'del-bookmark',
-                                    id: id,
-                                });
-                            } else {
-                                if (lastChapterBookmark !== -1) {
-                                    document.querySelector(`#bookmark${lastChapterBookmark}`).click();
-                                }
-                                lastChapterBookmark = Number(element.id.replace(/[a-zA-Z]/g, ''));
-                                isBookmarked = true;
-                                element.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
-                                let fandom = document
-                                    .querySelector('#pre_story_links')
-                                    .querySelectorAll('a');
-                                if (fandom[1]) {
-                                    fandom = fandom[1].innerText;
-                                } else {
-                                    fandom = fandom[0].innerText;
-                                }
-
-                                chrome.runtime.sendMessage({
-                                    message: 'set-bookmark',
-                                    chapter: Number(element.id.replace(/[a-zA-Z]/g, '')),
-                                    id: id,
-                                    fandom: fandom,
-                                    author: document.querySelector('#profile_top').querySelector('a')
-                                        .innerText,
-                                    storyName: document.querySelectorAll('b')[5].innerText,
-                                });
-                            }
-                        });
-                    }
-
-                    chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
-                        const bookmarkElement = document.querySelector(`#bookmark${response.chapter}`);
-                        if (bookmarkElement) {
-                            bookmarkElement.click();
+            // wtf
+            document.querySelector('#storytext').remove();
+            const allFicText = document.querySelector('#storytext1').parentElement;
+            allFicText.id = 'storytext';
+            if (settings.allowCopy) {
+                allFicText.querySelectorAll('*').forEach((element) => (element.style.userSelect = 'text'));
+            }
+            let isBookmarked = false;
+            let lastChapterBookmark = -1;
+            if (settings.bookmarkButton) {
+                document.querySelectorAll('.bookmark').forEach((element) => {
+                    element.addEventListener('click', () => {
+                        if (
+                            isBookmarked &&
+                            lastChapterBookmark === Number(element.id.replace(/[a-zA-Z]/g, ''))
+                        ) {
+                            lastChapterBookmark = -1;
+                            isBookmarked = false;
+                            element.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark2.png')}" width="20" height="20">`;
+                            chrome.runtime.sendMessage({
+                                message: 'del-bookmark',
+                                id: id,
+                            });
                         } else {
-                            console.warn(`Bookmark element for chapter ${response.chapter} of story ${id} not found in DOM.`);
+                            if (lastChapterBookmark !== -1) {
+                                document.querySelector(`#bookmark${lastChapterBookmark}`).click();
+                            }
+                            lastChapterBookmark = Number(element.id.replace(/[a-zA-Z]/g, ''));
+                            isBookmarked = true;
+                            element.innerHTML = `<img src="${chrome.runtime.getURL('icons/bookmark1.png')}" width="20" height="20">`;
+                            let fandom = document
+                                .querySelector('#pre_story_links')
+                                .querySelectorAll('a');
+                            if (fandom[1]) {
+                                fandom = fandom[1].innerText;
+                            } else {
+                                fandom = fandom[0].innerText;
+                            }
+
+                            chrome.runtime.sendMessage({
+                                message: 'set-bookmark',
+                                chapter: Number(element.id.replace(/[a-zA-Z]/g, '')),
+                                id: id,
+                                fandom: fandom,
+                                author: document.querySelector('#profile_top').querySelector('a')
+                                    .innerText,
+                                storyName: document.querySelectorAll('b')[5].innerText,
+                            });
                         }
                     });
-                }
+                });
 
-                document.querySelector('[title="bookmark"]').remove();
+                chrome.runtime.sendMessage({ message: 'get-bookmark', id: id }, (response) => {
+                    const bookmarkElement = document.querySelector(`#bookmark${response.chapter}`);
+                    if (bookmarkElement) {
+                        bookmarkElement.click();
+                    } else {
+                        console.warn(`Bookmark element for chapter ${response.chapter} of story ${id} not found in DOM.`);
+                    }
+                });
+            }
 
-                // Hide the button after it's clicked
-                allFicButton.style.display = 'none';
+            document.querySelector('[title="bookmark"]').remove();
 
-                // Hide the chapter dropdown, next, and previous buttons
-                const chapterDropdown = document.querySelector('#chap_select');
-                const nextButton = Array.from(document.querySelectorAll('.btn')).find((btn) =>
-                    btn.textContent.includes('Next >')
-                );
-                const prevButton = Array.from(document.querySelectorAll('.btn')).find((btn) =>
-                    btn.textContent.includes('< Prev')
-                );
+            // Hide the button after it's clicked
+            allFicButton.style.display = 'none';
 
-                if (chapterDropdown) {
-                    chapterDropdown.style.display = 'none';
-                }
-                if (nextButton) {
-                    nextButton.style.display = 'none';
-                }
-                if (prevButton) {
-                    prevButton.style.display = 'none';
-                }
+            // Hide the chapter dropdown, next, and previous buttons
+            const chapterDropdown = document.querySelector('#chap_select');
+            const nextButton = Array.from(document.querySelectorAll('.btn')).find((btn) =>
+                btn.textContent.includes('Next >')
+            );
+            const prevButton = Array.from(document.querySelectorAll('.btn')).find((btn) =>
+                btn.textContent.includes('< Prev')
+            );
 
-                const themeToggleButton = document.querySelector("[title='Story Contrast']");
-                if (themeToggleButton) {
-                    themeToggleButton.click(); // First click to toggle
-                    themeToggleButton.click(); // Second click to toggle back
-                } else {
-                    console.warn('Theme toggle button not found in story page DOM.');
-                }
-            });
-        }
+            if (chapterDropdown) {
+                chapterDropdown.style.display = 'none';
+            }
+            if (nextButton) {
+                nextButton.style.display = 'none';
+            }
+            if (prevButton) {
+                prevButton.style.display = 'none';
+            }
 
-        // Apply better info styling if enabled
-        if (settings.betterInfo) {
-            const descriptionDiv = document.querySelector('.lang').parentElement;
-            applyBetterInfoColor([descriptionDiv.parentElement]);
-        }
-
-    } catch (error) {
-        console.error('Failed to apply UI enhancements and features on story page:', error);
+            const themeToggleButton = document.querySelector("[title='Story Contrast']");
+            if (themeToggleButton) {
+                themeToggleButton.click(); // First click to toggle
+                themeToggleButton.click(); // Second click to toggle back
+            } else {
+                console.warn('Theme toggle button not found in story page DOM.');
+            }
+        });
     }
-}
+
+    // Switching colors
+    if (rating.parentElement.classList.length >= 3) {
+        switchTheme(
+            wordCounterSpan,
+            rating,
+            language,
+            genres,
+            chaptersCount,
+            wordsCount,
+            reviewsCount,
+            favsCount,
+            followsCount,
+            status,
+            document.querySelectorAll('h3')
+        );
+    }
+
+    document.querySelector('[onclick="toggleTheme();"]').addEventListener('click', () => {
+        switchTheme(
+            wordCounterSpan,
+            rating,
+            language,
+            genres,
+            chaptersCount,
+            wordsCount,
+            reviewsCount,
+            favsCount,
+            followsCount,
+            status,
+            document.querySelectorAll('h3')
+        );
+    });
+};
 
 function switchTheme(
     wordCounterSpan,
@@ -360,11 +383,11 @@ function switchTheme(
     h3s
 ) {
     const setColor = (colorArray) => {
-        for (const colorItem of colorArray) {
+        colorArray.forEach((colorItem) => {
             if (colorItem && colorItem[0]) {
                 colorItem[0].style.color = colorItem[1];
             }
-        }
+        });
     };
 
     if (rating.style.color === '#088383') {
@@ -381,9 +404,9 @@ function switchTheme(
             [follows, '#ffffff'],
             [status, '#ff9ce0'],
         ]);
-        for (const element of h3s) {
+        h3s.forEach((element) => {
             setColor([[element, '#ffffff']]);
-        }
+        });
 
         rating.parentElement.classList = 'xgray';
         rating.parentElement.style.color = '#d0d0d0';
@@ -401,9 +424,9 @@ function switchTheme(
             [follows, '#000000'],
             [status, '#00631f'],
         ]);
-        for (const element of h3s) {
+        h3s.forEach((element) => {
             setColor([[element, '#000000']]);
-        }
+        });
 
         rating.parentElement.classList = 'xgray';
         rating.parentElement.style.color = '';
@@ -428,7 +451,7 @@ async function makeSpans() {
         }
     }
 
-    for (const span of metaSpans) {
+    metaSpans.forEach((span) => {
         const item = span.innerText;
         let type = '';
         if (item.includes('Rated')) {
@@ -454,7 +477,7 @@ async function makeSpans() {
         if (type) {
             span.classList.add(type);
         }
-    }
+    });
 
     const characterSpan = descriptionDiv.querySelector(':not([class])');
     if (characterSpan) {

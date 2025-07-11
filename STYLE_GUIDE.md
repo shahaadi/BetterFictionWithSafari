@@ -37,7 +37,7 @@ chrome.storage.sync.get('settings')
 - Use single quotes for strings consistently
 - Add semicolons at the end of statements
 - Use consistent spacing around operators and brackets
-- Maximum line length: 100 characters
+- Maximum line length: 100 charactersMetaType
 
 ### 6. Naming Conventions
 - Use camelCase for variables and functions

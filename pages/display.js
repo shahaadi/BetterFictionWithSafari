@@ -23,8 +23,8 @@ async function main() {
             url.match(/https:\/\/www\.fanfiction\.net\/movie\/.*\/.*/) ||
             url.match(/https:\/\/www\.fanfiction\.net\/play\/.*\/.*/) ||
             url.match(/https:\/\/www\.fanfiction\.net\/tv\/.*\/.*/)) {
-            // These are story listing pages (list/canon)
-            pageType = 'canon';
+            // These are story listing pages (list)
+            pageType = 'list';
         } else if (url.match(/https:\/\/www\.fanfiction\.net\/u\/.*\/.*/)) {
             // Profile pages
             pageType = 'profile';
@@ -48,7 +48,7 @@ async function main() {
             pageType = 'just-in';
         } else {
             // Default fallback
-            pageType = 'canon';
+            pageType = 'list';
         }
 
         // Process the entire page with one function call
