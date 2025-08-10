@@ -1,5 +1,7 @@
 # BetterFiction - FanFiction.net Improver
 
+NOTE: THIS FORK IS NOW ARCHIVED AS ALL CHANGES HAVE BEEN UPSTREAMED TO THE SOURCE REPO
+
 ### [Link to this extension in the chrome store](https://chromewebstore.google.com/detail/betterfiction-fanfictionn/phhdklbifojeakgelbijajifknjbhndh)
 
 Take your FanFiction.net browsing and reading to the next level with BetterFiction, a feature-packed browser extension designed to enhance how you interact with your favorite fanfics.
